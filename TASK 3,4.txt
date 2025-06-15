@@ -1,0 +1,162 @@
+TASK 3
+
+1.SELECT 
+    s.student_id,
+    s.first_name,
+    s.last_name,
+    SUM(p.amount) AS total_payments
+FROM 
+    Students s
+JOIN 
+    Payments p ON s.student_id = p.student_id
+WHERE 
+    s.student_id = 101  -- Replace 101 with the actual student ID
+GROUP BY 
+    s.student_id, s.first_name, s.last_name;
+
+2.SELECT c.course_name, COUNT(e.student_id) AS total
+FROM Courses c
+JOIN Enrollments e ON c.course_id = e.course_id
+GROUP BY c.course_name
+ORDER BY total DESC;
+
+3.SELECT s.student_name
+FROM Students s
+LEFT JOIN Enrollments e ON s.student_id = e.student_id
+WHERE e.course_id IS NULL;
+
+4.SELECT 
+    s.first_name, 
+    s.last_name, 
+    c.course_name
+FROM Students s
+JOIN Enrollments e ON s.student_id = e.student_id
+JOIN Courses c ON e.course_id = c.course_id;
+
+5.SELECT 
+    t.first_name, 
+    t.last_name, 
+    c.course_name
+FROM Teacher t
+LEFT JOIN Courses c ON t.teacher_id = c.teacher_id;
+
+6.SELECT 
+    s.first_name, 
+    s.last_name, 
+    e.enrollment_date
+FROM Students s
+JOIN Enrollments e ON s.student_id = e.student_id
+JOIN Courses c ON e.course_id = c.course_id
+WHERE c.course_name = 'Mathematics';  -- Replace with your desired course name
+
+7.SELECT 
+    s.first_name, 
+    s.last_name
+FROM Students s
+LEFT JOIN Payments p ON s.student_id = p.student_id
+WHERE p.payment_id IS NULL;
+
+8.SELECT Courses.course_id, Courses.course_name
+FROM Courses
+LEFT JOIN Enrollments ON Courses.course_id = Enrollments.course_id
+WHERE Enrollments.course_id IS NULL;
+
+
+9.SELECT s.student_id, s.first_name, s.last_name
+FROM Students s
+JOIN Enrollments e ON s.student_id = e.student_id
+GROUP BY s.student_id, s.first_name, s.last_name
+HAVING COUNT(e.course_id) > 1;
+
+10.SELECT t.teacher_id, t.first_name, t.last_name
+FROM Teacher t
+LEFT JOIN Courses c ON t.teacher_id = c.teacher_id
+WHERE c.course_id IS NULL;
+
+
+
+
+-- 1. Average number of students enrolled in each course
+SELECT course_id, COUNT(student_id) / COUNT(DISTINCT course_id) AS avg_students
+FROM Enrollments
+GROUP BY course_id;
+
+-- 2. Student(s) with the highest payment
+SELECT student_id
+FROM Payments
+WHERE amount = (SELECT MAX(amount) FROM Payments);
+
+-- 3. Courses with the highest number of enrollments
+SELECT course_id
+FROM Enrollments
+GROUP BY course_id
+HAVING COUNT(*) = (
+    SELECT MAX(cnt)
+    FROM (SELECT course_id, COUNT(*) AS cnt FROM Enrollments GROUP BY course_id) AS counts
+);
+
+-- 4. Total payments made to courses taught by each teacher
+SELECT teacher_id, SUM(amount) AS total_payment
+FROM Payments
+WHERE course_id IN (
+    SELECT course_id FROM Courses
+)
+GROUP BY teacher_id;
+
+-- 5. Students enrolled in all available courses
+SELECT student_id
+FROM Enrollments
+GROUP BY student_id
+HAVING COUNT(DISTINCT course_id) = (SELECT COUNT(*) FROM Courses);
+
+-- 6. Teachers not assigned to any courses
+SELECT teacher_name
+FROM Teachers
+WHERE teacher_id NOT IN (
+    SELECT teacher_id FROM Courses WHERE teacher_id IS NOT NULL
+);
+
+-- 7. Average age of all students
+SELECT AVG(DATEDIFF(CURDATE(), dob)/365) AS avg_age
+FROM Students;
+
+-- 8. Courses with no enrollments
+SELECT course_name
+FROM Courses
+WHERE course_id NOT IN (
+    SELECT course_id FROM Enrollments
+);
+
+-- 9. Total payments by each student for each course
+SELECT student_id, course_id, SUM(amount) AS total_payment
+FROM Payments
+GROUP BY student_id, course_id;
+
+-- 10. Students who have made more than one payment
+SELECT student_id
+FROM Payments
+GROUP BY student_id
+HAVING COUNT(*) > 1;
+
+-- 11. Total payments made by each student
+SELECT s.student_name, SUM(p.amount) AS total_payment
+FROM Students s
+JOIN Payments p ON s.student_id = p.student_id
+GROUP BY s.student_name;
+
+-- 12. Course names with count of students enrolled
+SELECT c.course_name, COUNT(e.student_id) AS total_enrolled
+FROM Courses c
+JOIN Enrollments e ON c.course_id = e.course_id
+GROUP BY c.course_name;
+
+-- 13. Average payment amount made by students
+SELECT s.student_name, AVG(p.amount) AS avg_payment
+FROM Students s
+JOIN Payments p ON s.student_id = p.student_id
+GROUP BY s.student_name;
+
+
+
+
+
